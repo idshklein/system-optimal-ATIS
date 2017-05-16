@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <style>
+  input{
+  width:70px;
+  }
+  </style>
+  </head>
+  <body>
+  Number of rounds: <input type="number" id="number_of_rounds" min="1" value="10000"/> Number of agents: <input type="number" id="number_of_agents" min="1" value="100"/> Days to average: <input type="number" id="Days_to_average" min="1" value="100"/> 
+  <br/><br/>
+  Route A free flow: <input type="number" id="AFF" step="any" value="0"/> Route A impadence: <input type="number" id="AI" step="any" value="1"/> Route A power: <input type="number" id="powerA" value="1"/>
+  Route B free flow: <input type="number" id="BFF" step="any" value="100"/> Route B impadence: <input type="number" id="BI" step="any" value="0"/> Route B power: <input type="number" id="powerB" value="1"/>
+  <br/><br/>
+  Exploration rate percent: <input type="number" id="explorationPercent" value="3"/>
+  Exploration of recommendations rate percent: <input type="number" id="explorationRecPercent" value="0"/>
+  Exploration in first X days: <input type="number" id="firstExpNum" value="0"/>
+  saw w: <input type="number" id="saw" value="1" max = "1" min = "0" step="0.01"/>
+  saw days: <input type="number" id="sawDays" value="3"  min = "1" step="1"/>
+  logit sensitivity: <input type="number" id="logitsens" value="1"  min = "1" step="1"/>
+  <br/><br/>
+  Recommendation distribution: <select id = "distribution">
+  <option value = "fair">fair</option>
+  <option value = "random">random</option>
+  <option value = "justice">justice</option>
+  <option value = "anti_merit">anti merit</option>
+  <option value = "killer_alloc">killer</option>
+  <option value = "reformer">reformer</option>
+  <option value = "reformer_SAW">reformer_SAW</option>
+  <option value = "a">uses route A the least</option>
+  <option value = "unfair">unfair</option>
+  <option value = "unjustice">unjustice</option>
+  <option value = "merit">merit</option>
+  <option value = "b">uses route B the least</option>killer_alloc
+  <option value = "meritA">meritA</option>
+  <option value = "meritB">meritB</option>
+  <option value = "anti_meritA">anti_meritA</option>
+  <option value = "anti_meritB">anti_meritB</option>
+  </select>
+  enforcement:<select id = "punishment">
+  <option value= "false">no</option>
+  <option value= "punishment">punishment</option>
+  <option value= "reward">reward</option>
+  <option value= "punishment_reward">punishment and reward</option>
+  </select>
+  <br/><br/>
+  Behavioral model: <select id = "model">
+  <option value = "totalRecall">Total Recall</option>
+  <option value = "totalRecall_logit">Total Recall Logit</option>
+  <option value = "total_recall_recommendation">Total Recall recommendation</option>
+  <option value = "total_recall_recommendation_logit">Total Recall recommendation logit</option>
+  <option value = "payoffSum">Payoff Sum</option>
+  <option value = "SAW">Sampling and Weighting</option>
+  <option value = "SAW_logit">Sampling and Weighting logit</option>
+  <option value = "SAWSO">Sampling and Weighting recommendation</option>
+  <option value = "SAWSO_logit">Sampling and Weighting recommendation logit</option>
+  <option value = "Compornot">Total Recall only recommendation</option>
+  <option value = "greedy">Greedy Aspirations</option>
+  </select>
+  Within: <input id="within" type="checkbox"> Rounds of within: <input type="number" id="withinNumber" value="1"  min = "1" step="1"/>
+  <br/><br/>
+  Get graph of: <select id = "graph">
+  <option value = "NumA">agents on A</option>
+  <option value = "NumAcomplied">agents on A with compliers</option>
+  <option value = "NumAcompliedsaw">agents on A with compliers ans saw compliers</option>
+  <option value = "avggraph">agents average time</option>
+  <option value = "ind_switches">switches per round</option>
+  <option value = "cumulative_switches">cumulative switches</option>
+  <option value = "gini">gini</option>
+  <option value = "times">total times</option>
+  </select>
+  <br/><br/>
+  <button onclick="run()">run</button>
+  <button onclick="toCsv(array)">get csv</button>
+  start slice:<input id="start" type="number"> end slice:<input id="end" type="number"> <button onclick="slicer()">slice</button><button onclick="drawChart();">restore</button><span id="ticker"></span>
+  
+  <br/>
+  <!--canvas id="canvas" height="600" width="1366">
+	</canvas-->
+	<br/>
+	<span id="avg"></span>
+	<div id="curve_chart"></div>
+	<div id="results"></div>
+	<script id = "loader" src = "https://www.gstatic.com/charts/loader.js"></script>
+	<script>
+	var head= document.getElementsByTagName('head')[0];
+	var paths = ["\\SOUECALC.js","\\Driver.js","\\system.js","\\csv.js","\\canvas.js","\\ATIS.js","\\turnsSO.js","\\googleviz.js","\\total_recall.js","\\total_recall_recommendation.js","\\SD.js"];
+	var web_paths = ["https://dl.dropboxusercontent.com/s/fz0ansc4nz619cf/SOUECALC.js",
+	"https://dl.dropboxusercontent.com/s/y0z5vycjw0t0573/Driver.js",
+	"https://dl.dropboxusercontent.com/s/rcajzpcl0u46ho4/system.js",
+	"https://dl.dropboxusercontent.com/s/if7r8pyc19banst/csv.js",
+	"https://dl.dropboxusercontent.com/s/m8d0s94w5j5ajfe/canvas.js",
+	"https://dl.dropboxusercontent.com/s/mp6172ra4nswz3y/ATIS.js",
+	"https://dl.dropboxusercontent.com/s/8rcssl3p5jrnrr5/turnsSO.js",
+	"https://dl.dropboxusercontent.com/s/qn1wqq97booj6d9/googleviz.js",
+	"https://dl.dropboxusercontent.com/s/gedymxhncr6lqde/total_recall.js",
+	"https://dl.dropboxusercontent.com/s/vi641f6m9r9zhpc/total_recall_recommendation.js",
+	"https://dl.dropboxusercontent.com/s/0fppvhl7t1h7ukg/SD.js"
+	];
+	for(var i = 0; i < paths.length;i++){
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		if (location.valueOf().pathname === "/D:/Users/idokl/Dropbox/abm_soue.html"){
+			script.src = "D:\\Users\\idokl\\Dropbox" + paths[i];
+		}else if(location.valueOf().pathname === "/D:/Users/User/Dropbox/abm_soue.html"){
+			script.src = "D:\\Users\\User\\Dropbox" + paths[i];
+		}else if(location.valueOf().pathname === "/s/lojebq5jmyzy3no/abm_soue.html"){
+			script.src = web_paths[i];
+		}
+		head.appendChild(script);
+	}
+  </script>
+  </body>
+</html>
